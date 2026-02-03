@@ -211,9 +211,19 @@ export class StockBarcodeScannerAction extends Component {
      */
     async validatePicking() {
         try {
-            await this.orm.call("stock.picking", "button_validate", [[this.state.pickingId]]);
-            this.notification.add(_t("Picking validated successfully"), { type: "success" });
-            this.close();
+            // Use the scanner-specific validation method that handles all wizards
+            const result = await this.orm.call(
+                "stock.picking",
+                "validate_from_scanner",
+                [this.state.pickingId]
+            );
+
+            if (result.success) {
+                this.notification.add(result.message || _t("Picking validated successfully"), { type: "success" });
+                this.close();
+            } else {
+                this.notification.add(result.error || _t("Validation failed"), { type: "danger" });
+            }
         } catch (error) {
             console.error("Error validating picking:", error);
             this.notification.add(_t("Error validating picking: %s", error.message), {

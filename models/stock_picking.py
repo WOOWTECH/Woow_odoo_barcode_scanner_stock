@@ -391,6 +391,72 @@ class StockPicking(models.Model):
 
         return picking.on_barcode_scanned(barcode)
 
+    @api.model
+    def validate_from_scanner(self, picking_id):
+        """Validate a picking from the barcode scanner.
+
+        This method handles all wizard confirmations automatically,
+        making it suitable for use from the scanner interface.
+
+        Args:
+            picking_id: int, the picking ID
+
+        Returns:
+            dict: Result with success/error status
+        """
+        picking = self.browse(picking_id)
+        if not picking.exists():
+            return {'success': False, 'error': _('Picking not found')}
+
+        if picking.state in ('done', 'cancel'):
+            return {'success': False, 'error': _('Picking is already %s') % picking.state}
+
+        try:
+            # Use skip_sms context to avoid SMS confirmation wizard
+            result = picking.with_context(skip_sms=True, skip_backorder=True).button_validate()
+
+            # Handle wizard responses
+            max_iterations = 5  # Prevent infinite loops
+            iteration = 0
+
+            while result and isinstance(result, dict) and result.get('res_model') and iteration < max_iterations:
+                iteration += 1
+                res_model = result.get('res_model')
+                res_id = result.get('res_id')
+
+                if res_model == 'stock.immediate.transfer':
+                    wizard = self.env[res_model].browse(res_id)
+                    result = wizard.with_context(skip_sms=True).process()
+                elif res_model == 'stock.backorder.confirmation':
+                    wizard = self.env[res_model].browse(res_id)
+                    result = wizard.with_context(skip_sms=True).process()
+                elif res_model == 'confirm.stock.sms':
+                    # Skip SMS confirmation by processing without it
+                    wizard = self.env[res_model].browse(res_id)
+                    # Get the picking IDs from context and validate directly
+                    ctx = result.get('context', {})
+                    picking_ids = ctx.get('button_validate_picking_ids', [picking.id])
+                    pickings = self.browse(picking_ids)
+                    pickings.with_context(skip_sms=True)._action_done()
+                    result = True
+                else:
+                    # Unknown wizard - stop and return error
+                    return {
+                        'success': False,
+                        'error': _('Unexpected confirmation required: %s') % res_model,
+                        'wizard': result
+                    }
+
+            # Verify the picking was validated
+            picking.invalidate_recordset()
+            if picking.state == 'done':
+                return {'success': True, 'message': _('Picking validated successfully')}
+            else:
+                return {'success': False, 'error': _('Validation completed but picking state is: %s') % picking.state}
+
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
 
 class StockMoveLine(models.Model):
     _inherit = 'stock.move.line'
