@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="barcode_scanner_stock.ScannerAction">
+        <div class="o_barcode_scanner_stock h-100 d-flex flex-column bg-dark text-white">
+            <!-- Header -->
+            <div class="o_scanner_header bg-success p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <i class="fa fa-barcode me-2"/>
+                        <t t-esc="state.pickingName"/>
+                    </h4>
+                    <small class="opacity-75">
+                        <t t-esc="state.pickingType"/>
+                        <t t-if="state.partnerName"> - <t t-esc="state.partnerName"/></t>
+                    </small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button"
+                            class="btn btn-light btn-sm"
+                            t-on-click="toggleScanMode"
+                            t-att-title="state.scanMode === 'product' ? 'Switch to Location Mode' : 'Switch to Product Mode'">
+                        <i t-att-class="state.scanMode === 'product' ? 'fa fa-cube' : 'fa fa-map-marker'"/>
+                    </button>
+                    <button type="button" class="btn btn-light btn-sm" t-on-click="close">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress" style="height: 8px; border-radius: 0;">
+                <div class="progress-bar bg-success"
+                     role="progressbar"
+                     t-att-style="'width: ' + progressPercent + '%'"
+                     t-att-aria-valuenow="progressPercent"
+                     aria-valuemin="0"
+                     aria-valuemax="100"/>
+            </div>
+
+            <!-- Main Content -->
+            <div class="o_scanner_content flex-grow-1 overflow-auto p-3">
+                <t t-if="state.isLoading">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </t>
+
+                <t t-else="">
+                    <!-- Status Summary -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center py-3">
+                                    <h2 class="mb-0">
+                                        <t t-esc="state.scannedCount"/> / <t t-esc="state.totalCount"/>
+                                    </h2>
+                                    <small>Items Scanned</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center py-3">
+                                    <h2 class="mb-0"><t t-esc="progressPercent"/>%</h2>
+                                    <small>Complete</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scan Button -->
+                    <div class="text-center mb-4">
+                        <button type="button"
+                                class="btn btn-success btn-lg px-5 py-3"
+                                t-on-click="openCameraScanner">
+                            <i class="fa fa-camera fa-2x mb-2 d-block"/>
+                            Open Camera Scanner
+                        </button>
+                    </div>
+
+                    <!-- Last Scanned -->
+                    <t t-if="state.lastScanned">
+                        <div class="alert alert-success mb-4">
+                            <small class="text-muted">Last scanned:</small>
+                            <div class="font-monospace fs-5" t-esc="state.lastScanned"/>
+                        </div>
+                    </t>
+
+                    <!-- Move Lines -->
+                    <div class="card bg-secondary">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fa fa-list me-2"/>
+                                Products to Process
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <t t-if="state.moveLines.length === 0">
+                                <div class="text-center py-4 text-muted">
+                                    <i class="fa fa-inbox fa-2x mb-2 d-block"/>
+                                    No products in this picking
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="list-group list-group-flush">
+                                    <t t-foreach="state.moveLines" t-as="line" t-key="line.id">
+                                        <div class="list-group-item bg-secondary text-white d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong t-esc="line.productName"/>
+                                                <t t-if="line.lot">
+                                                    <br/>
+                                                    <small class="text-muted">
+                                                        <i class="fa fa-tag me-1"/>
+                                                        <t t-esc="line.lot"/>
+                                                    </small>
+                                                </t>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <i class="fa fa-arrow-right me-1"/>
+                                                    <t t-esc="line.locationFrom"/> → <t t-esc="line.locationTo"/>
+                                                </small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-success fs-6">
+                                                    <t t-esc="line.quantity"/> <t t-esc="line.uom"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <!-- Footer -->
+            <div class="o_scanner_footer bg-secondary p-3">
+                <div class="d-flex justify-content-between gap-2">
+                    <div class="text-muted small align-self-center">
+                        <i class="fa fa-keyboard-o me-1"/>
+                        USB scanner ready
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button"
+                                class="btn btn-outline-light"
+                                t-on-click="close">
+                            Cancel
+                        </button>
+                        <button type="button"
+                                class="btn btn-success"
+                                t-on-click="validatePicking"
+                                t-att-disabled="!canValidate">
+                            <i class="fa fa-check me-1"/>
+                            Validate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

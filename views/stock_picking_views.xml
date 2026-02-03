@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend Stock Picking Form View with Barcode Scanner Button -->
+    <record id="stock_picking_form_view_barcode_scanner" model="ir.ui.view">
+        <field name="name">stock.picking.form.barcode_scanner</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <!-- Add barcode scanner button in header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_barcode_scanner"
+                        string="Scan Barcodes"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-barcode"
+                        invisible="state in ('done', 'cancel')"/>
+            </xpath>
+
+            <!-- Add scanner fields (hidden by default) -->
+            <xpath expr="//field[@name='move_ids_without_package']" position="before">
+                <group invisible="1">
+                    <field name="scanner_mode"/>
+                    <field name="scanner_location_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

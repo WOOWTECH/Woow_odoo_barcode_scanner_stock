@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Barcode Scanner Stock Settings -->
+    <!-- Settings are configured through the res.config.settings model -->
+    <!-- Note: The settings UI integration depends on Odoo version -->
+</odoo>
