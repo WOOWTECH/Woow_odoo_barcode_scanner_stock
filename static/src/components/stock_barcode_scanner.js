@@ -236,7 +236,9 @@ export class StockBarcodeScannerAction extends Component {
     get canValidate() {
         // Can validate if picking is not done/cancelled and has scanned items
         const validStates = ["assigned", "confirmed", "waiting"];
-        return validStates.includes(this.state.state) && this.state.scannedCount > 0;
+        const result = validStates.includes(this.state.state) && this.state.scannedCount > 0;
+        console.log("[canValidate] state:", this.state.state, "scannedCount:", this.state.scannedCount, "result:", result);
+        return result;
     }
 
     /**
