@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Barcode Scanner - Inventory',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Inventory/Barcode',
     'summary': 'Barcode and QR code scanning for Stock Picking operations',
     'description': """

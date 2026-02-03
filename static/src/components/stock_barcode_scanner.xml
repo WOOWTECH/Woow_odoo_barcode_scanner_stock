@@ -148,16 +148,17 @@
                         <button type="button"
                                 class="btn btn-outline-light"
                                 t-on-click="close">
-                            Cancel
+                            取消
                         </button>
                         <button type="button"
                                 class="btn btn-success"
                                 t-on-click="validatePicking"
                                 t-att-disabled="!canValidate">
                             <i class="fa fa-check me-1"/>
-                            Validate
+                            核實
                         </button>
                     </div>
+                    <!-- Debug: state=<t t-esc="state.state"/> scanned=<t t-esc="state.scannedCount"/> canValidate=<t t-esc="canValidate"/> -->
                 </div>
             </div>
         </div>
