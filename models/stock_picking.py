@@ -147,8 +147,9 @@ class StockPicking(models.Model):
                     }
                 }
 
-        # product_info['product'] is already a product.product record
-        product = product_info['product']
+        # product_info['product'] is a dict from _serialize_for_js(), get the actual recordset
+        product_data = product_info['product']
+        product = self.env['product.product'].browse(product_data['id'])
 
         # Find or create move line
         move_line = self._find_or_create_move_line(product, gs1_data)
