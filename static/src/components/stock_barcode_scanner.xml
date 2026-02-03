@@ -152,13 +152,11 @@
                         </button>
                         <button type="button"
                                 class="btn btn-success"
-                                t-on-click="validatePicking"
-                                t-att-disabled="!canValidate">
+                                t-on-click="validatePicking">
                             <i class="fa fa-check me-1"/>
                             核實
                         </button>
                     </div>
-                    <!-- Debug: state=<t t-esc="state.state"/> scanned=<t t-esc="state.scannedCount"/> canValidate=<t t-esc="canValidate"/> -->
                 </div>
             </div>
         </div>
